@@ -1,0 +1,12 @@
+applications:
+  - name: ataa-shop
+    instances: 1
+    path: ./target/com.sap.ecm.rendition-1.0-SNAPSHOT-fat.jar
+    memory: 1G
+    disk_quota: 1G
+    buildpack: sap_java_buildpack_jakarta
+    env:
+      JBP_CONFIG_JAVA_OPTS: >
+        [ java_opts: "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory " ]
+      JBP_CONFIG_COMPONENTS: "jres: ['com.sap.xs.java.buildpack.jre.SAPMachineJRE']"
+      JBP_CONFIG_SAP_MACHINE_JRE: "{ version: 17.+ }"
