@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+    
+    environment {
+        CF_API = 'https://api.cf.eu12.hana.ondemand.com'
+        CF_ORG = 'sdm-ds-dev-eu12'
+        CF_SPACE = 'Ataa'
+        CF_USERNAME = 'P1942240678'
+        CF_PASSWORD = 'MySAP123'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/mdataakhan/sdm-ds-renditionservice.git', branch: 'main'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('SonarQube Code Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') { 
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Mend Dependency Scan') {
+            steps {
+                sh 'mvn wss:check-policy'
+            }
+        }
+
+        stage('Cloud Foundry Deployment') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'cf-credentials', usernameVariable: 'CF_USERNAME', passwordVariable: 'CF_PASSWORD')]) {
+                    sh '''
+                        cf login -a ${CF_API} -u ${CF_USERNAME} -p ${CF_PASSWORD} -o ${CF_ORG} -s ${CF_SPACE}
+                        cf push
+                    '''
+                }
+            }
+        }
+
+        stage('SonarQube Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+            junit '**/target/surefire-reports/*.xml'
+        }
+        
+        success {
+            echo 'SUCCESS'
+        }
+
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
