@@ -3,7 +3,7 @@ In my local space there were already teams related microservices deployed hence 
 I have removed java files due to compliance issue and replaced with simple java implementation.
 Main focus of this Assignment was on how Devops tools like SonarQube, Mend, and Jenkins make life easier for developers working on microservice and to demostrate Cloud Foundary advantages.
 
-# Git Workflow Guide
+# Git Workflow Guide (Centralized Git Workflow.)
 
 This guide outlines the steps to initialize a Git repository, add files, commit changes, and push them to a remote repository.
 
